@@ -49,6 +49,26 @@ function createWindowTexture() {
   return tex
 }
 
+function createRoadTexture() {
+  const canvas = document.createElement('canvas')
+  canvas.width = 64
+  canvas.height = 64
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = '#45454d'
+  ctx.fillRect(0, 0, 64, 64)
+  for (let i = 0; i < 50; i++) {
+    const x = (i * 17) % 64
+    const y = (i * 31) % 64
+    ctx.fillStyle = (i % 2 === 0) ? '#3d3d44' : '#4d4d56'
+    ctx.fillRect(x, y, 2, 2)
+  }
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.wrapS = THREE.RepeatWrapping
+  tex.wrapT = THREE.RepeatWrapping
+  tex.repeat.set(4, 4)
+  return tex
+}
+
 // Procedurally generates the Solmar Bay v2 city layout, colliders, and landmarks
 export function buildCity(scene, seed) {
   const rng = makeRng(seed)
@@ -88,8 +108,11 @@ export function buildCity(scene, seed) {
   seaMesh.position.set(0, -0.3, -210)
   scene.add(seaMesh)
 
-  // Roads and sidewalks
-  const roadMat = new THREE.MeshLambertMaterial({ color: 0x2a2a2d })
+  // Configure textured asphalt material with balanced mid-grey tone
+  const roadMat = new THREE.MeshLambertMaterial({
+    map: createRoadTexture(),
+    color: 0x4d4d55
+  })
   const sidewalkMat = new THREE.MeshLambertMaterial({ color: 0x5a5a62 })
   const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff })
   const edgeMat = new THREE.MeshBasicMaterial({ color: 0x777777 })
