@@ -109,6 +109,7 @@ export function createHud() {
       }
     },
 
+    // Render canvas minimap view including blocks, street grid, and markers
     drawMinimap(view) {
       const canvas = el['minimap'];
       if (!canvas) return;
@@ -119,12 +120,13 @@ export function createHud() {
       ctx.clearRect(0, 0, size, size);
 
       // Dark background
-      ctx.fillStyle = '#111116';
+      ctx.fillStyle = '#181822';
       ctx.fillRect(0, 0, size, size);
 
       if (!view) return;
 
-      const half = view.half || 160;
+      const half = view.half || 150;
+      const roadHalf = 6;
       // Map world coordinates [-half, half] to [0, size]
       function mapX(x) {
         return ((x + half) / (half * 2)) * size;
@@ -133,14 +135,29 @@ export function createHud() {
         return ((z + half) / (half * 2)) * size;
       }
 
-      // Blue sea strip along top edge (north is -z, so north is top)
-      ctx.fillStyle = '#1e3d59';
-      ctx.fillRect(0, 0, size, 12);
+      // City blocks between streets
+      const coords = [-half, -120, -60, 0, 60, 120, half];
+      ctx.fillStyle = '#2c2c36';
+      for (let i = 0; i < coords.length - 1; i++) {
+        for (let j = 0; j < coords.length - 1; j++) {
+          const x1 = coords[i] + roadHalf;
+          const x2 = coords[i+1] - roadHalf;
+          const z1 = coords[j] + roadHalf;
+          const z2 = coords[j+1] - roadHalf;
+          if (x2 > x1 && z2 > z1) {
+            ctx.fillRect(mapX(x1), mapZ(z1), mapX(x2) - mapX(x1), mapZ(z2) - mapZ(z1));
+          }
+        }
+      }
 
-      // Streets as grey lines
+      // Brighter sea strip along top edge (north is -z, so north is top)
+      ctx.fillStyle = '#2270b8';
+      ctx.fillRect(0, 0, size, 14);
+
+      // Streets as bright wide lines
       if (view.streets && Array.isArray(view.streets)) {
-        ctx.strokeStyle = '#2b2b36';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#555566';
+        ctx.lineWidth = 10;
         for (const s of view.streets) {
           ctx.beginPath();
           ctx.moveTo(mapX(s.x1), mapZ(s.z1));
@@ -149,74 +166,77 @@ export function createHud() {
         }
       }
 
-      // Mission marker: yellow dot with a ring
+      // Mission marker: yellow dot with an enlarged ring
       if (view.marker) {
         const mx = mapX(view.marker.x);
         const mz = mapZ(view.marker.z);
         ctx.strokeStyle = '#ffd23f';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(mx, mz, 8, 0, Math.PI * 2);
+        ctx.arc(mx, mz, 10, 0, Math.PI * 2);
         ctx.stroke();
         ctx.fillStyle = '#ffd23f';
         ctx.beginPath();
-        ctx.arc(mx, mz, 4, 0, Math.PI * 2);
+        ctx.arc(mx, mz, 5, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Police: red dots
+      // Police: enlarged red dots
       if (view.police && Array.isArray(view.police)) {
-        ctx.fillStyle = '#ff4a4a';
+        ctx.fillStyle = '#ff5555';
         for (const p of view.police) {
           ctx.beginPath();
-          ctx.arc(mapX(p.x), mapZ(p.z), 3, 0, Math.PI * 2);
+          ctx.arc(mapX(p.x), mapZ(p.z), 4.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
 
-      // Other cars: white dots
+      // Other cars: enlarged white dots
       if (view.cars && Array.isArray(view.cars)) {
         ctx.fillStyle = '#ffffff';
         for (const c of view.cars) {
           ctx.beginPath();
-          ctx.arc(mapX(c.x), mapZ(c.z), 2.5, 0, Math.PI * 2);
+          ctx.arc(mapX(c.x), mapZ(c.z), 3.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
 
-      // Pedestrians: tiny grey dots
+      // Pedestrians: enlarged grey dots
       if (view.peds && Array.isArray(view.peds)) {
-        ctx.fillStyle = '#888888';
+        ctx.fillStyle = '#aaaaaa';
         for (const p of view.peds) {
           ctx.beginPath();
-          ctx.arc(mapX(p.x), mapZ(p.z), 1.5, 0, Math.PI * 2);
+          ctx.arc(mapX(p.x), mapZ(p.z), 2.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
 
-      // Player: white arrow rotated by heading
+      // Player: bigger white arrow with dark outline rotated by heading
       const px = mapX(view.playerX);
       const pz = mapZ(view.playerZ);
       ctx.save();
       ctx.translate(px, pz);
       ctx.rotate(view.playerHeading || 0);
+      ctx.strokeStyle = '#111116';
+      ctx.lineWidth = 2;
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.moveTo(0, -6);
-      ctx.lineTo(4, 5);
-      ctx.lineTo(-4, 5);
+      ctx.moveTo(0, -9);
+      ctx.lineTo(6, 7);
+      ctx.lineTo(-6, 7);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
       ctx.restore();
 
       // 'N' label in top-left corner
-      ctx.fillStyle = '#888888';
-      ctx.font = '10px sans-serif';
-      ctx.fillText('N', 6, 22);
+      ctx.fillStyle = '#bbbbcc';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText('N', 7, 24);
 
       // Border around minimap
-      ctx.strokeStyle = '#333340';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#444455';
+      ctx.lineWidth = 2;
       ctx.strokeRect(0, 0, size, size);
     },
 

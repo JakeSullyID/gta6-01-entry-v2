@@ -147,12 +147,12 @@ function setTimeOfDay(mode) {
     parked.forEach(c => { if (c.headlights) c.headlights.visible = false })
     traffic.forEach(c => { if (c.headlights) c.headlights.visible = false })
   } else if (mode === 'dusk') {
-    scene.background.set(0x332244)
-    scene.fog.color.set(0x443355)
-    dirLight.color.set(0xff88aa)
-    dirLight.intensity = 1.1
-    dirLight.position.set(100, 60, -150)
-    hemiLight.intensity = 0.9
+    scene.background.set(0x443355)
+    scene.fog.color.set(0x554466)
+    dirLight.color.set(0xff99bb)
+    dirLight.intensity = 1.6
+    dirLight.position.set(100, 80, -100)
+    hemiLight.intensity = 1.2
     parked.forEach(c => { if (c.headlights) c.headlights.visible = true })
     traffic.forEach(c => { if (c.headlights) c.headlights.visible = true })
   }
@@ -603,9 +603,19 @@ function animate(now) {
     hud.update(dt)
 
     // Minimap view
+    const streetSegments = []
+    const halfSize = CITY.half
+    for (const s of CITY.streets) {
+      streetSegments.push({ x1: -halfSize, z1: s, x2: halfSize, z2: s })
+      streetSegments.push({ x1: s, z1: -halfSize, x2: s, z2: halfSize })
+    }
+
     hud.drawMinimap({
-      pos: targetPos,
-      heading: targetHeading,
+      playerX: targetPos.x,
+      playerZ: targetPos.z,
+      playerHeading: targetHeading,
+      half: CITY.half,
+      streets: streetSegments,
       cars: [...traffic, ...parked, ...police.cruisers],
       peds,
       marker: missions.marker,
